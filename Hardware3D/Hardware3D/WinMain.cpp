@@ -2,10 +2,23 @@
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	
 	switch(msg)
 	{
 	case WM_CLOSE:
 		PostQuitMessage(97);
+		break;
+	case WM_KEYDOWN:
+		if(wParam == 'F')
+		{
+			SetWindowText(hWnd, "F Pressed");
+		}
+		break;
+	case WM_KEYUP:
+		if(wParam == 'F')
+		{
+			SetWindowText(hWnd, "F Released");
+		}
 		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
