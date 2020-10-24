@@ -32,7 +32,7 @@ bool Mouse::WheelIsPressed() const noexcept
 
 Mouse::Event Mouse::Read() noexcept
 {
-	if (!buffer.empty()) return Mouse::Event();
+	if (buffer.empty()) return Mouse::Event();
 
 	Mouse::Event e = buffer.front();
 	buffer.pop();
