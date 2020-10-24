@@ -5,8 +5,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 {
 	try
 	{
-		Window wnd(800, 170, "Window From Other Class");
-		Window wnd2(200, 650, "Second Window From Other Class");
+		Window wnd(800, 680, "Direct3D Learning");
 
 		MSG msg;
 		BOOL gResult;
@@ -14,10 +13,14 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+			if (wnd.kbd.KeyIsPressed(VK_MENU))
+			{
+				MessageBox(nullptr, "ALT key was pressed!", "A key was pressed!", MB_OK | MB_ICONINFORMATION);
+			}
 		}
 
 		if (gResult == -1)
-			return -1;
+			throw D3DWND_LAST_EXCEPT();
 
 		return msg.wParam;
 	}

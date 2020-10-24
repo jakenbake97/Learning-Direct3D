@@ -160,13 +160,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D3DException.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DException.h" />
+    <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="WinInclude.h" />
     <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Hardware3D.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\Jake\Desktop\HWGLogo.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
