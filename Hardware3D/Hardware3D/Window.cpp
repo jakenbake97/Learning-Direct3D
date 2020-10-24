@@ -16,7 +16,7 @@ Window::WindowClass::WindowClass() noexcept
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = GetInstance();
-	wc.hIcon = static_cast<HICON>(LoadImage(hInst,MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 64,64,0));
+	wc.hIcon = static_cast<HICON>(LoadImage(hInst,MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 64, 64, 0));
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
@@ -53,7 +53,7 @@ Window::Window(int width, int height, const char* name)
 	wr.right = width + wr.left;
 	wr.top = 100;
 	wr.bottom = height + wr.top;
-	if(FAILED(AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE)))
+	if (FAILED(AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE)))
 	{
 		throw D3DWND_LAST_EXCEPT();
 	}
@@ -64,7 +64,7 @@ Window::Window(int width, int height, const char* name)
 	                    nullptr, nullptr, WindowClass::GetInstance(), this
 	);
 	// check for hWnd error
-	if(hWnd == nullptr)
+	if (hWnd == nullptr)
 	{
 		throw D3DWND_LAST_EXCEPT();
 	}
@@ -111,12 +111,12 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
-	// clear keystate when window loses focus to prevent input from getting stuck in a keydown state
+		// clear keystate when window loses focus to prevent input from getting stuck in a keydown state
 	case WM_KILLFOCUS:
 		kbd.ClearState();
 		break;
-		
-	/********** KEYBOARD MESSAGES **********/
+
+		/********** KEYBOARD MESSAGES **********/
 	case WM_KEYDOWN:
 		// syskey commands need to be handled to track ALT key (VK_MENU) and F10
 	case WM_SYSKEYDOWN:
@@ -133,7 +133,63 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CHAR:
 		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
-	/********** END KEYBOARD MESSAGES **********/
+		/********** END KEYBOARD MESSAGES **********/
+		/********** MOUSE MESSAGES **********/
+	case WM_MOUSEMOVE:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnMouseMove(pt.x, pt.y);
+		}
+	case WM_LBUTTONDOWN:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnLeftPressed(pt.x, pt.y);
+			break;
+		}
+	case WM_RBUTTONDOWN:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnRightPressed(pt.x, pt.y);
+			break;
+		}
+	case WM_MBUTTONDOWN:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnWheelPressed(pt.x, pt.y);
+			break;
+		}
+	case WM_LBUTTONUP:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnLeftReleased(pt.x, pt.y);
+			break;
+		}
+	case WM_RBUTTONUP:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnRightReleased(pt.x, pt.y);
+			break;
+		}
+	case WM_MBUTTONUP:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.OnWheelReleased(pt.x, pt.y);
+			break;
+		}
+	case WM_MOUSEWHEEL:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+			{
+				mouse.OnWheelUp(pt.x, pt.y);
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+			{
+				mouse.OnWheelDown(pt.x, pt.y);
+			}
+			break;
+		}
+		/********** END MOUSE MESSAGES **********/
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
