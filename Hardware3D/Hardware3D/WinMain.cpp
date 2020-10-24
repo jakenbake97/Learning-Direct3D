@@ -1,8 +1,9 @@
+#include <string>
 #include <Windows.h>
+#include <sstream>
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	
 	switch(msg)
 	{
 	case WM_CLOSE:
@@ -19,6 +20,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			SetWindowText(hWnd, "F Released");
 		}
+		break;
+	case WM_CHAR:
+		{
+			static std::string title;
+			title.push_back((char)wParam);
+			SetWindowText(hWnd, title.c_str());
+		}
+		break;
+	case WM_LBUTTONDOWN:
+		{
+			POINTS pt = MAKEPOINTS(lParam);
+			std::ostringstream oss;
+			oss << "(" << pt.x << "," << pt.y << ")";
+			SetWindowText(hWnd, oss.str().c_str());
+		}
+		break;
+	default:
 		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
