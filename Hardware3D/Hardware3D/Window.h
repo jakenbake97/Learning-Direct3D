@@ -35,7 +35,7 @@ private:
 		HINSTANCE hInst;
 	};
 public:
-	Window(int width, int height, const char* name) noexcept;
+	Window(int width, int height, const char* name);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -50,5 +50,6 @@ private:
 	HWND hWnd;
 };
 
-// error exception helper macro
+// error exception helper macros
 #define D3DWND_EXCEPT(hr) Window::Exception(__LINE__,__FILE__, hr);
+#define D3DWND_LAST_EXCEPT() Window::Exception(__LINE__,__FILE__, GetLastError());
