@@ -1,3 +1,7 @@
+/***************************************************************
+ * This is essentially a copy of ChiliWin from the DirectX     *
+ * tutorial series on youtube at: https://youtu.be/D-PC-huX-l8 *
+ ***************************************************************/
 #pragma once
 
 // target Windows 7 or later

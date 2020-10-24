@@ -1,8 +1,22 @@
 #pragma once
 #include "WinInclude.h"
+#include "D3DException.h"
 
 class Window
 {
+public:
+	class Exception : public D3DException
+	{
+	public:
+		Exception(int line, const char* file, HRESULT hRes) noexcept;
+		const char* what() const noexcept override;
+		const char* GetType() const noexcept override;
+		static std::string TranslateErrorCode(HRESULT hRes) noexcept;
+		HRESULT GetErrorCode() const noexcept;
+		std::string GetErrorString() const noexcept;
+	private:
+		HRESULT hRes;
+	};
 private:
 	// singleton for managing the registration and cleanup of window class
 	class WindowClass
@@ -35,3 +49,6 @@ private:
 	int height;
 	HWND hWnd;
 };
+
+// error exception helper macro
+#define D3DWND_EXCEPT(hr) Window::Exception(__LINE__,__FILE__, hr);

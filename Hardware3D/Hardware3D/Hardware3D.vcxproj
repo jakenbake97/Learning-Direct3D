@@ -159,10 +159,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="D3DException.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="D3DException.h" />
     <ClInclude Include="WinInclude.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
