@@ -3,8 +3,8 @@
 
 D3DException::D3DException(int line, const char* file) noexcept
 	:
-line(line),
-file(file)
+	line(line),
+	file(file)
 {
 }
 

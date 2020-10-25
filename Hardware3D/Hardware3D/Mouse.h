@@ -42,48 +42,59 @@ public:
 			y(0)
 		{
 		}
+
 		Event(Type type, const Mouse& parent) noexcept
 			:
-		type(type),
-		leftIsPressed(parent.leftIsPressed),
-		rightIsPressed(parent.rightIsPressed),
-		wheelIsPressed(parent.wheelIsPressed),
-		x(parent.x),
-		y(parent.y)
-		{}
+			type(type),
+			leftIsPressed(parent.leftIsPressed),
+			rightIsPressed(parent.rightIsPressed),
+			wheelIsPressed(parent.wheelIsPressed),
+			x(parent.x),
+			y(parent.y)
+		{
+		}
+
 		bool IsValid() const noexcept
 		{
 			return type != Type::Invalid;
 		}
+
 		Type GetType() const noexcept
 		{
 			return type;
 		}
-		std::pair<int,int> GetPos() const noexcept
+
+		std::pair<int, int> GetPos() const noexcept
 		{
-			return { x,y };
+			return {x, y};
 		}
+
 		int GetPosX() const noexcept
 		{
 			return x;
 		}
+
 		int GetPosY() const noexcept
 		{
 			return y;
 		}
+
 		bool LeftIsPressed() const noexcept
 		{
 			return leftIsPressed;
 		}
+
 		bool RightIsPressed() const noexcept
 		{
 			return rightIsPressed;
 		}
+
 		bool WheelIsPressed() const noexcept
 		{
 			return wheelIsPressed;
 		}
 	};
+
 public:
 	Mouse() = default;
 	Mouse(const Mouse&) = delete;
@@ -96,10 +107,12 @@ public:
 	bool RightIsPressed() const noexcept;
 	bool WheelIsPressed() const noexcept;
 	Mouse::Event Read() noexcept;
+
 	bool IsEmpty() const noexcept
 	{
 		return buffer.empty();
 	}
+
 	void Flush() noexcept;
 private:
 	void OnMouseMove(int x, int y) noexcept;

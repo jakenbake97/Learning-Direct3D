@@ -21,6 +21,7 @@ public:
 	private:
 		HRESULT hRes;
 	};
+
 private:
 	// singleton for managing the registration and cleanup of window class
 	class WindowClass
@@ -33,11 +34,12 @@ private:
 		~WindowClass();
 		WindowClass(const WindowClass&) = default;
 		WindowClass& operator=(const WindowClass&) = delete;
-		
+
 		static constexpr const char* wndClassName = "Direct3D Engine Window";
 		static WindowClass wndClass;
 		HINSTANCE hInst;
 	};
+
 public:
 	Window(int width, int height, const char* name);
 	~Window();
@@ -46,7 +48,7 @@ public:
 	void SetTitle(const std::string& title);
 	static std::optional<int> ProcessMessages();
 private:
-	                     static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	void ReleaseMouse(POINTS pt);
 	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;

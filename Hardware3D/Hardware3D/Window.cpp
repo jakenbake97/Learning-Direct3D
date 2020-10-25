@@ -79,7 +79,7 @@ Window::~Window()
 
 void Window::SetTitle(const std::string& title)
 {
-	if(SetWindowText(hWnd, title.c_str()) == 0)
+	if (SetWindowText(hWnd, title.c_str()) == 0)
 	{
 		throw D3DWND_LAST_EXCEPT();
 	}
@@ -89,10 +89,10 @@ std::optional<int> Window::ProcessMessages()
 {
 	MSG msg;
 	// while queue has messages, remove and dispatch them (but do not block the update loop)
-	while(PeekMessage(&msg, nullptr, 0, 0,PM_REMOVE))
+	while (PeekMessage(&msg, nullptr, 0, 0,PM_REMOVE))
 	{
 		// check for quit because PeekMessage does not signal via return
-		if(msg.message == WM_QUIT)
+		if (msg.message == WM_QUIT)
 		{
 			// return of optional wrapping int signals quit (arg to PostQuitMessage is in wParam)
 			return msg.wParam;
@@ -179,7 +179,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		{
 			const POINTS pt = MAKEPOINTS(lParam);
 			// in client region -> log move, and log enter + capture mouse (if not previously in widow)
-			if(pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
+			if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
 			{
 				mouse.OnMouseMove(pt.x, pt.y);
 				if (!mouse.IsInWindow())
@@ -188,14 +188,14 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 					mouse.OnMouseEnter();
 				}
 			}
-			// not in client -> log move / maintain capture if button down
+				// not in client -> log move / maintain capture if button down
 			else
 			{
-				if(mouse.LeftIsPressed() || mouse.WheelIsPressed() || mouse.RightIsPressed())
+				if (mouse.LeftIsPressed() || mouse.WheelIsPressed() || mouse.RightIsPressed())
 				{
 					mouse.OnMouseMove(pt.x, pt.y);
 				}
-				// button up -> release capture / log event for leaving
+					// button up -> release capture / log event for leaving
 				else
 				{
 					ReleaseCapture();

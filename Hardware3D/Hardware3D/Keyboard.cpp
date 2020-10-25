@@ -8,7 +8,7 @@ bool Keyboard::KeyIsPressed(unsigned char keycode) const noexcept
 Keyboard::Event Keyboard::ReadKey() noexcept
 {
 	if (keyBuffer.empty()) return Keyboard::Event();
-	
+
 
 	const Keyboard::Event e = keyBuffer.front();
 	keyBuffer.pop();
@@ -19,10 +19,11 @@ bool Keyboard::KeyIsEmpty() const noexcept
 {
 	return keyBuffer.empty();
 }
+
 char Keyboard::ReadChar() noexcept
 {
 	if (charBuffer.empty()) return 0;
-	
+
 	unsigned char charCode = charBuffer.front();
 	charBuffer.pop();
 	return charCode;
