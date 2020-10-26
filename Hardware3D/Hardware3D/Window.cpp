@@ -70,6 +70,9 @@ Window::Window(int width, int height, const char* name)
 	}
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+
+	// Create Graphics Object
+	pGfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
@@ -95,7 +98,7 @@ std::optional<int> Window::ProcessMessages()
 		if (msg.message == WM_QUIT)
 		{
 			// return of optional wrapping int signals quit (arg to PostQuitMessage is in wParam)
-			return msg.wParam;
+			return (int)msg.wParam;
 		}
 
 		// TranslateMessage will post Auxiliary WM_CHAR messages from key messages
@@ -105,6 +108,11 @@ std::optional<int> Window::ProcessMessages()
 
 	// return empty optional when not quitting app
 	return {};
+}
+
+Graphics& Window::Gfx()
+{
+	return *pGfx;
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept

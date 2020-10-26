@@ -1,10 +1,13 @@
 #pragma once
-#include <optional>
 
 #include "WinInclude.h"
 #include "D3DException.h"
+#include "Graphics.h"
 #include "Keyboard.h"
+#include <memory>
 #include "Mouse.h"
+#include <optional>
+
 
 class Window
 {
@@ -47,6 +50,7 @@ public:
 	Window& operator=(const Window&) = delete;
 	void SetTitle(const std::string& title);
 	static std::optional<int> ProcessMessages();
+	Graphics& Gfx();
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -59,6 +63,7 @@ private:
 	int width;
 	int height;
 	HWND hWnd;
+	std::unique_ptr<Graphics>pGfx;
 };
 
 // error exception helper macros
