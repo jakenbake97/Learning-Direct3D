@@ -18,7 +18,7 @@ const char* D3DException::what() const noexcept
 
 const char* D3DException::GetType() const noexcept
 {
-	return "D3D Exception";
+	return "Half-Way Engine Exception";
 }
 
 int D3DException::GetLine() const noexcept

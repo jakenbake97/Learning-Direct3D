@@ -88,7 +88,7 @@ void Window::SetTitle(const std::string& title)
 	}
 }
 
-std::optional<int> Window::ProcessMessages()
+std::optional<int> Window::ProcessMessages() noexcept
 {
 	MSG msg;
 	// while queue has messages, remove and dispatch them (but do not block the update loop)
@@ -112,6 +112,10 @@ std::optional<int> Window::ProcessMessages()
 
 Graphics& Window::Gfx()
 {
+	if (!pGfx)
+	{
+		throw D3DWND_NOGFX_EXCEPT();
+	}
 	return *pGfx;
 }
 
@@ -264,37 +268,14 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 }
 
 // Window Exception stuff
-Window::Exception::Exception(int line, const char* file, HRESULT hRes) noexcept
-	:
-	D3DException(line, file),
-	hRes(hRes)
-{
-}
-
-const char* Window::Exception::what() const noexcept
-{
-	std::ostringstream oss;
-	oss << GetType() << std::endl
-		<< "[Error Code] " << GetErrorCode() << std::endl
-		<< "[Description] " << GetErrorString() << std::endl
-		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* Window::Exception::GetType() const noexcept
-{
-	return "D3D Window Exception";
-}
-
 std::string Window::Exception::TranslateErrorCode(HRESULT hRes) noexcept
 {
-	char* pMsgBuffer = nullptr;
-	// windows will allocate memory for err string and make our pointer point to it
-	DWORD nMsgLen = FormatMessage(
+	char* pMsgBuf = nullptr;
+	// windows will allocate memory for err string and make our pointer to point to it
+	const DWORD nMsgLen = FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		nullptr, hRes, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPSTR>(&pMsgBuffer), 0, nullptr
+		reinterpret_cast<LPSTR>(&pMsgBuf), 0, nullptr
 	);
 	// 0 string length returned indicates a failure
 	if (nMsgLen == 0)
@@ -302,18 +283,47 @@ std::string Window::Exception::TranslateErrorCode(HRESULT hRes) noexcept
 		return "Unidentified error code";
 	}
 	// copy error string from windows-allocated buffer to std::string
-	std::string errorString = pMsgBuffer;
-	// free the windows buffer
-	LocalFree(pMsgBuffer);
+	std::string errorString = pMsgBuf;
+	// free windows buffer
+	LocalFree(pMsgBuf);
 	return errorString;
 }
 
-HRESULT Window::Exception::GetErrorCode() const noexcept
+Window::HResException::HResException(int line, const char* file, HRESULT hRes) noexcept
+	:
+	Exception(line, file),
+	hRes(hRes)
+{
+}
+
+const char* Window::HResException::what() const noexcept
+{
+	std::ostringstream oss;
+	oss << GetType() << std::endl
+		<< "[Error Code] 0x" << std::hex << std::uppercase << GetErrorCode()
+		<< std::dec << " (" << (unsigned long)GetErrorCode() << ")" << std::endl
+		<< "[Description] " << GetErrorDescription() << std::endl
+		<< GetOriginString();
+	whatBuffer = oss.str();
+	return whatBuffer.c_str();
+}
+
+const char* Window::HResException::GetType() const noexcept
+{
+	return "Half-Way Engine Window Exception";
+}
+
+HRESULT Window::HResException::GetErrorCode() const noexcept
 {
 	return hRes;
 }
 
-std::string Window::Exception::GetErrorString() const noexcept
+std::string Window::HResException::GetErrorDescription() const noexcept
 {
-	return TranslateErrorCode(hRes);
+	return Exception::TranslateErrorCode(hRes);
+}
+
+const char* Window::NoGfxException::GetType() const noexcept
+{
+	return "Half-Way Engine Window Exception [No Graphics]";
 }
