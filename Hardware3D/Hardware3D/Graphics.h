@@ -2,8 +2,9 @@
 #include "WinInclude.h"
 #include "D3DException.h"
 #include <d3d11.h>
-#include <vector>
 #include "DxgiInfoManager.h"
+#include <vector>
+#include <wrl.h>
 
 class Graphics
 {
@@ -40,7 +41,7 @@ public:
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&&) = delete;
-	~Graphics();
+	~Graphics() = default;
 
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
@@ -48,9 +49,9 @@ private:
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
-
-	ID3D11Device* pDevice = nullptr;
-	IDXGISwapChain* pSwap = nullptr;
-	ID3D11DeviceContext* pContext = nullptr;
-	ID3D11RenderTargetView* pTarget = nullptr;
+	
+	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
+	Microsoft::WRL::ComPtr <IDXGISwapChain> pSwap;
+	Microsoft::WRL::ComPtr <ID3D11DeviceContext> pContext;
+	Microsoft::WRL::ComPtr <ID3D11RenderTargetView> pTarget;
 };
