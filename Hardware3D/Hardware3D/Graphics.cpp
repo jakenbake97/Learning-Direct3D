@@ -5,6 +5,7 @@
 
 namespace wrl = Microsoft::WRL;
 
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
@@ -101,7 +102,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	pContext->ClearRenderTargetView(pTarget.Get(), color);
 }
 
-void Graphics::DrawTestTriangle()
+void Graphics::DrawTestTriangle(float angle)
 {
 	struct Vertex
 	{
@@ -123,12 +124,12 @@ void Graphics::DrawTestTriangle()
 	// create an array of vertices to fill the buffer with (A 2D triangle at center of screen)
 	const Vertex vertices[] =
 	{
-		{ 0.0f, 0.5f,  255, 0,   0,   255},
-		{ 0.5f, -0.5f, 0,   255, 0,   255},
-		{ -0.5f, -0.5f,0,   0,   255, 255},
-		{ -0.3f, 0.3f,0,   255,   0, 255},
-		{ 0.3f, 0.3f, 0,   0, 255,   255},
-		{ 0.0f, -1.8f,  255, 0,   0,   255},
+		{0.0f, 0.5f, 255, 0, 0, 255},
+		{0.5f, -0.5f, 0, 255, 0, 255},
+		{-0.5f, -0.5f, 0, 0, 255, 255},
+		{-0.3f, 0.3f, 0, 255, 0, 255},
+		{0.3f, 0.3f, 0, 0, 255, 255},
+		{0.0f, -1.0f, 255, 0, 0, 255},
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
@@ -147,20 +148,20 @@ void Graphics::DrawTestTriangle()
 	HRESULT hr;
 
 	GFX_THROW_INFO(pDevice->CreateBuffer(&bufferDesc, &subData, &pVertexBuffer));
-	
+
 	// Bind vertex buffer to pipeline
 	const UINT stride = sizeof(Vertex);
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
-	
+
 	// create index buffer
 	const short indices[] =
 	{
-		0,1,2,
-		0,2,3,
-		0,4,1,
-		2,1,5,
+		0, 1, 2,
+		0, 2, 3,
+		0, 4, 1,
+		2, 1, 5,
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
@@ -177,6 +178,41 @@ void Graphics::DrawTestTriangle()
 	GFX_THROW_INFO(pDevice->CreateBuffer(&indBufferDesc, &subData, &pIndexBuffer));
 	// Bind Index buffer to pipeline
 	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
+	// create constant buffer for transformation matrix
+	struct ConstantBuffer
+	{
+		struct
+		{
+			float element[4][4];
+		} transformation;
+	};
+
+	const ConstantBuffer cb =
+	{
+		{
+			(3.0f / 4.0f) * std::cos(angle), std::sin(angle), 0.0f, 0.0f,
+			(3.0f / 4.0f) * -std::sin(angle),std::cos(angle), 0.0f, 0.0f,
+			0.0f,                    0.0f,            1.0f, 0.0f,
+			0.0f,                    0.0f,            0.0f, 1.0f
+		}
+	};
+
+	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
+	D3D11_BUFFER_DESC cbd = {};
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd.Usage = D3D11_USAGE_DYNAMIC;
+	cbd.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+	cbd.MiscFlags = 0u;
+	cbd.ByteWidth = sizeof(cb);
+	cbd.StructureByteStride = 0u;
+
+	D3D11_SUBRESOURCE_DATA csd = {};
+	csd.pSysMem = &cb;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, &csd, &pConstantBuffer));
+
+	// bind constant buffer
+	pContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 
 	// create vertex shader
 	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
@@ -225,7 +261,7 @@ void Graphics::DrawTestTriangle()
 	vp.MaxDepth = 1;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	
+
 	pContext->RSSetViewports(1u, &vp);
 
 	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(std::size(indices), 0, 0));
