@@ -1,5 +1,5 @@
-﻿#include "Mouse.h"
-#include "WinInclude.h"
+﻿#include "WinInclude.h"
+#include "Mouse.h"
 
 std::pair<int, int> Mouse::GetPos() const noexcept
 {
@@ -50,9 +50,9 @@ bool Mouse::WheelIsPressed() const noexcept
 	return wheelIsPressed;
 }
 
-Mouse::Event Mouse::Read() noexcept
+std::optional<Mouse::Event> Mouse::Read() noexcept
 {
-	if (buffer.empty()) return Mouse::Event();
+	if (buffer.empty()) return {};
 
 	Mouse::Event e = buffer.front();
 	buffer.pop();
