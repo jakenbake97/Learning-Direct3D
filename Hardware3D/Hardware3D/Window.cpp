@@ -119,6 +119,16 @@ Graphics& Window::Gfx()
 	return *pGfx;
 }
 
+int Window::GetWidth() const
+{
+	return width;
+}
+
+int Window::GetHeight() const
+{
+	return height;
+}
+
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	// use create parameter passed in from CreateWindow() to store window class pointer on WinAPI side
@@ -220,6 +230,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		{
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnLeftPressed(pt.x, pt.y);
+			// bring window to foreground on left click of the client region
+			SetForegroundWindow(hWnd);
 			break;
 		}
 	case WM_RBUTTONDOWN:
