@@ -105,16 +105,30 @@ void Graphics::DrawTestTriangle()
 {
 	struct Vertex
 	{
-		float x;
-		float y;
+		struct
+		{
+			float x;
+			float y;
+		} pos;
+
+		struct
+		{
+			unsigned char r;
+			unsigned char g;
+			unsigned char b;
+			unsigned char a;
+		} color;
 	};
 
 	// create an array of vertices to fill the buffer with (A 2D triangle at center of screen)
 	const Vertex vertices[] =
 	{
-		{0.0f, 0.5f},
-		{0.5f, -0.5f},
-		{-0.5f, -0.5f}
+		{ 0.0f, 0.5f,  255, 0,   0,   255},
+		{ 0.5f, -0.5f, 0,   255, 0,   255},
+		{ -0.5f, -0.5f,0,   0,   255, 255},
+		{ -0.3f, 0.3f,0,   255,   0, 255},
+		{ 0.3f, 0.3f, 0,   0, 255,   255},
+		{ 0.0f, -1.8f,  255, 0,   0,   255},
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
@@ -133,17 +147,44 @@ void Graphics::DrawTestTriangle()
 	HRESULT hr;
 
 	GFX_THROW_INFO(pDevice->CreateBuffer(&bufferDesc, &subData, &pVertexBuffer));
-
+	
 	// Bind vertex buffer to pipeline
 	const UINT stride = sizeof(Vertex);
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
+	
+	// create index buffer
+	const short indices[] =
+	{
+		0,1,2,
+		0,2,3,
+		0,4,1,
+		2,1,5,
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
+	D3D11_BUFFER_DESC indBufferDesc = {};
+	indBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indBufferDesc.CPUAccessFlags = 0u;
+	indBufferDesc.MiscFlags = 0u;
+	indBufferDesc.ByteWidth = sizeof(indices);
+	indBufferDesc.StructureByteStride = sizeof(short);
+
+	subData.pSysMem = indices;
+
+	GFX_THROW_INFO(pDevice->CreateBuffer(&indBufferDesc, &subData, &pIndexBuffer));
+	// Bind Index buffer to pipeline
+	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
 	// create vertex shader
 	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
 	wrl::ComPtr<ID3DBlob> pBlob;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &pBlob));
-	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader));
+	GFX_THROW_INFO(
+		pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)
+	);
 
 	// bind vertex shader
 	pContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);
@@ -153,17 +194,19 @@ void Graphics::DrawTestTriangle()
 	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	GFX_THROW_INFO(pDevice->CreateInputLayout(ied, (UINT)std::size(ied), pBlob->GetBufferPointer(),
 		pBlob->GetBufferSize(), &pInputLayout));
 
 	// bind vertex layout
 	pContext->IASetInputLayout(pInputLayout.Get());
-	
+
 	// create pixel shader
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob));
-	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
+	GFX_THROW_INFO(
+		pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
 
 	// bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
@@ -182,9 +225,10 @@ void Graphics::DrawTestTriangle()
 	vp.MaxDepth = 1;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
+	
 	pContext->RSSetViewports(1u, &vp);
 
-	GFX_THROW_INFO_ONLY(pContext->Draw((UINT)std::size(vertices), 0u));
+	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(std::size(indices), 0, 0));
 }
 
 // Graphics Exception Stuff
@@ -253,7 +297,7 @@ std::string Graphics::HResException::GetErrorInfo() const noexcept
 
 Graphics::InfoException::InfoException(int line, const char* file, std::vector<std::string> infoMsgs) noexcept
 	:
-Exception(line, file)
+	Exception(line, file)
 {
 	// join all info messages with newlines into single string
 	for (const auto& m : infoMsgs)
@@ -263,7 +307,7 @@ Exception(line, file)
 	}
 
 	// remove final newline if exists
-	if(!info.empty())
+	if (!info.empty())
 	{
 		info.pop_back();
 	}

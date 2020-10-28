@@ -30,7 +30,7 @@ int App::Start()
 void App::FrameUpdate()
 {
 	const float c = (std::sin(timer.Peek()) / 2.0f) + 0.5f;
-	wnd.Gfx().ClearBuffer(c, c, 1.0f);
+	wnd.Gfx().ClearBuffer(c, c, c);
 	wnd.Gfx().DrawTestTriangle();
 	wnd.Gfx().EndFrame();
 }
