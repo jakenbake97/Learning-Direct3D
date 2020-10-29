@@ -1,7 +1,7 @@
 #include "Window.h"
 #include <sstream>
 #include "resource.h"
-#include "WindowsErrorMacros.h"
+#include "WindowErrorMacros.h"
 
 // Window Class Stuff
 Window::WindowClass Window::WindowClass::wndClass;

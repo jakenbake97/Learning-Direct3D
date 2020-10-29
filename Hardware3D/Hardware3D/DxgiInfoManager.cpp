@@ -4,7 +4,7 @@
 #include <dxgidebug.h>
 #include <memory>
 #include "GraphicsErrorMacros.h"
-#include "WindowsErrorMacros.h"
+#include "WindowErrorMacros.h"
 
 #pragma comment(lib, "dxguid.lib")
 

@@ -1,7 +1,7 @@
-/*****************************************************************
- * This is essentially a copy of ChiliException from the DirectX *
- * tutorial series on youtube at: https://youtu.be/QYGLXhulvVQ   *
- *****************************************************************/
+/************************************************************************************************************
+ * This is essentially a copy of ChiliException from the DirectX                                            *
+ * tutorial series on youtube at: https://www.youtube.com/playlist?list=PLqCJpWy5Fohd3S7ICFXwUomYW0Wv67pDD  *
+ ************************************************************************************************************/
 #pragma once
 #include <exception>
 #include <string>

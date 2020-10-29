@@ -2,13 +2,15 @@
 #include "BindableBase.h"
 #include "GraphicsErrorMacros.h"
 #include <DirectXMath.h>
+#include "Cube.h"
 
 Box::Box(Graphics& gfx, 
 	std::mt19937& rng, 
 	std::uniform_real_distribution<float>& aDist, 
 	std::uniform_real_distribution<float>& dDist, 
 	std::uniform_real_distribution<float>& oDist, 
-	std::uniform_real_distribution<float>& rDist)
+	std::uniform_real_distribution<float>& rDist,
+	std::uniform_real_distribution<float>& bDist)
 		:
 r(rDist(rng)),
 theta(aDist(rng)),
@@ -21,48 +23,27 @@ dTheta(oDist(rng)),
 dPhi(oDist(rng)),
 dChi(oDist(rng))
 {
+	namespace dx = DirectX;
 	if (!IsStaticInitialized())
 	{
 		struct Vertex
 		{
-			struct
-			{
-				float x;
-				float y;
-				float z;
-			} pos;
+			dx::XMFLOAT3 pos;
 		};
-		const std::vector<Vertex> vertices =
-		{
-			{-1.0f, -1.0f, -1.0f},
-			{1.0f, -1.0f, -1.0f},
-			{-1.0f, 1.0f, -1.0f},
-			{1.0f,1.0f,-1.0f},
-			{-1.0f,-1.0f,1.0f},
-			{1.0f,-1.0f,1.0f},
-			{-1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f}
-		};
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
+		
+		const auto model = Cube::Make<Vertex>();
+		
+		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));
 
-		auto pvs = std::make_unique<VertexShader>(gfx, L"VertexShader.cso");
+		auto pvs = std::make_unique<VertexShader>(gfx, L"ColorIndexVs.cso");
 		auto pvsbc = pvs->GetBytecode();
 
 		AddStaticBind(std::move(pvs));
 
-		AddStaticBind(std::make_unique<PixelShader>(gfx, L"PixelShader.cso"));
+		AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndexPs.cso"));
 
-		const std::vector<unsigned short> indices =
-		{
-			0,2,1,  2,3,1,
-			1,3,5,  3,7,5,
-			2,6,3,  3,6,7,
-			4,5,7,  4,7,6,
-			0,4,2,  2,4,6,
-			0,1,4,  1,5,4
-		};
 
-		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
+		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
 
 		struct ConstantColorBuffer
 		{
@@ -72,17 +53,19 @@ dChi(oDist(rng))
 				float g;
 				float b;
 				float a;
-			}faceColors[6];
+			}faceColors[8];
 		};
 		const ConstantColorBuffer colorBuf =
 		{
 			{
-				{1.0f, 0.0f, 1.0f},
+				{1.0f, 1.0f, 1.0f},
 				{1.0f, 0.0f, 0.0f},
 				{0.0f, 1.0f, 0.0f},
-				{0.0f, 0.0f, 1.0f},
 				{1.0f, 1.0f, 0.0f},
+				{ 0.0f,0.0f,1.0f },
+				{ 1.0f,0.0f,1.0f },
 				{0.0f, 1.0f, 1.0f},
+				{0.0f, 0.0f, 0.0f}
 			}
 		};
 
@@ -103,6 +86,9 @@ dChi(oDist(rng))
 	}
 	// transforms are unique to each box, so they aren't in the static buffers
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+
+	// model deformation transform (per instance, not stored as bind)
+	dx::XMStoreFloat3x3(&mt, dx::XMMatrixScaling(1.0f, 1.0f, bDist(rng)));
 }
 
 void Box::Update(float dt) noexcept
@@ -117,8 +103,10 @@ void Box::Update(float dt) noexcept
 
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
-	return DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
-		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
-		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+	namespace dx = DirectX;
+	return dx::XMLoadFloat3x3(&mt) *
+		dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
+		dx::XMMatrixTranslation(r, 0.0f, 0.0f) *
+		dx::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
+		dx::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }
