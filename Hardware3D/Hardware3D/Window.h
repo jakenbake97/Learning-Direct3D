@@ -19,10 +19,10 @@ public:
 
 		static std::string TranslateErrorCode(HRESULT hRes) noexcept;
 	};
-	class HResException : public Exception
+	class HResultException : public Exception
 	{
 	public:
-		HResException(int line, const char* file, HRESULT hRes) noexcept;
+		HResultException(int line, const char* file, HRESULT hRes) noexcept;
 		const char* what() const noexcept override;
 		const char* GetType() const noexcept override;
 		HRESULT GetErrorCode() const noexcept;
@@ -80,8 +80,3 @@ private:
 	HWND hWnd;
 	std::unique_ptr<Graphics>pGfx;
 };
-
-// error exception helper macros
-#define D3DWND_EXCEPT(hr) Window::HResException(__LINE__,__FILE__, (hr))
-#define D3DWND_LAST_EXCEPT() Window::HResException(__LINE__,__FILE__, GetLastError())
-#define D3DWND_NOGFX_EXCEPT() Window::NoGfxException(__LINE__,__FILE__)

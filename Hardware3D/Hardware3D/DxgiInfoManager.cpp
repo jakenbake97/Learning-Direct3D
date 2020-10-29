@@ -3,10 +3,10 @@
 #include "Graphics.h"
 #include <dxgidebug.h>
 #include <memory>
+#include "GraphicsErrorMacros.h"
+#include "WindowsErrorMacros.h"
 
 #pragma comment(lib, "dxguid.lib")
-
-#define GFX_THROW_NOINFO(hrCall) if( FAILED(hr = (hrCall))) throw Graphics::HResException(__LINE__, __FILE__, hr)
 
 DxgiInfoManager::DxgiInfoManager()
 {
@@ -17,7 +17,7 @@ DxgiInfoManager::DxgiInfoManager()
 	auto* const hModDxgiDebug = LoadLibraryEx("dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hModDxgiDebug == nullptr)
 	{
-		throw D3DWND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 
 	// get address of DXGIGetDebugInterface in dll
@@ -26,7 +26,7 @@ DxgiInfoManager::DxgiInfoManager()
 		));
 	if(DxgiGetDebugInterface == nullptr)
 	{
-		throw D3DWND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 
 	HRESULT hr;

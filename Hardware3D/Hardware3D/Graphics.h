@@ -6,18 +6,23 @@
 #include <string>
 #include <vector>
 #include <wrl.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include <memory>
+#include <random>
 
 class Graphics
 {
+	friend class Bindable;
 public:
 	class Exception : public D3DException
 	{
 		using D3DException::D3DException;
 	};
-	class HResException : public Exception
+	class HResultException : public Exception
 	{
 	public:
-		HResException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs = {}) noexcept;
+		HResultException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs = {}) noexcept;
 		const char* what() const noexcept override;
 		const char* GetType() const noexcept override;
 		HRESULT GetErrorCode() const noexcept;
@@ -38,16 +43,16 @@ public:
 	private:
 		std::string info;
 	};
-	class DeviceRemovedException : public HResException
+	class DeviceRemovedException : public HResultException
 	{
-		using HResException::HResException;
+		using HResultException::HResultException;
 	public:
 		const char* GetType() const noexcept override;
 	private:
 		std::string reason;
 	};
 public:
-	Graphics(HWND hWnd);
+	Graphics(HWND hWnd, UINT width = 800, UINT height = 600);
 	Graphics(const Graphics&) = delete;
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
@@ -56,8 +61,12 @@ public:
 
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
+	void DrawIndexed(UINT count) noexcept(!IS_DEBUG);
+	void SetProjection(DirectX::FXMMATRIX proj) noexcept;
+	DirectX::XMMATRIX GetProjection() const noexcept;
 	void DrawTestTriangle(float angle, float x, float y, float z = 0);
 private:
+	DirectX::XMMATRIX projection;
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif

@@ -1,6 +1,7 @@
 #include "Window.h"
 #include <sstream>
 #include "resource.h"
+#include "WindowsErrorMacros.h"
 
 // Window Class Stuff
 Window::WindowClass Window::WindowClass::wndClass;
@@ -55,7 +56,7 @@ Window::Window(int width, int height, const char* name)
 	wr.bottom = height + wr.top;
 	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
 	{
-		throw D3DWND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 	// create window and get handle
 	hWnd = CreateWindow(WindowClass::GetName(), name,
@@ -66,7 +67,7 @@ Window::Window(int width, int height, const char* name)
 	// check for hWnd error
 	if (hWnd == nullptr)
 	{
-		throw D3DWND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
@@ -84,7 +85,7 @@ void Window::SetTitle(const std::string& title)
 {
 	if (SetWindowText(hWnd, title.c_str()) == 0)
 	{
-		throw D3DWND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 }
 
@@ -114,7 +115,7 @@ Graphics& Window::Gfx()
 {
 	if (!pGfx)
 	{
-		throw D3DWND_NOGFX_EXCEPT();
+		throw WND_NOGFX_EXCEPT();
 	}
 	return *pGfx;
 }
@@ -301,14 +302,14 @@ std::string Window::Exception::TranslateErrorCode(HRESULT hRes) noexcept
 	return errorString;
 }
 
-Window::HResException::HResException(int line, const char* file, HRESULT hRes) noexcept
+Window::HResultException::HResultException(int line, const char* file, HRESULT hRes) noexcept
 	:
 	Exception(line, file),
 	hRes(hRes)
 {
 }
 
-const char* Window::HResException::what() const noexcept
+const char* Window::HResultException::what() const noexcept
 {
 	std::ostringstream oss;
 	oss << GetType() << std::endl
@@ -320,17 +321,17 @@ const char* Window::HResException::what() const noexcept
 	return whatBuffer.c_str();
 }
 
-const char* Window::HResException::GetType() const noexcept
+const char* Window::HResultException::GetType() const noexcept
 {
 	return "Half-Way Engine Window Exception";
 }
 
-HRESULT Window::HResException::GetErrorCode() const noexcept
+HRESULT Window::HResultException::GetErrorCode() const noexcept
 {
 	return hRes;
 }
 
-std::string Window::HResException::GetErrorDescription() const noexcept
+std::string Window::HResultException::GetErrorDescription() const noexcept
 {
 	return Exception::TranslateErrorCode(hRes);
 }
