@@ -2,6 +2,7 @@
 #include <sstream>
 #include "resource.h"
 #include "WindowErrorMacros.h"
+#include "imgui/imgui_impl_win32.h"
 
 // Window Class Stuff
 Window::WindowClass Window::WindowClass::wndClass;
@@ -72,12 +73,16 @@ Window::Window(int width, int height, const char* name)
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 
+	// Init ImGui Win32 Implementation
+	ImGui_ImplWin32_Init(hWnd);
+
 	// Create Graphics Object
 	pGfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
 {
+	ImGui_ImplWin32_Shutdown();
 	DestroyWindow(hWnd);
 }
 
@@ -169,6 +174,13 @@ void Window::ReleaseMouse(const POINTS pt)
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+	{
+		return true;
+	}
+
+	const auto& imGuiIO = ImGui::GetIO();
+
 	switch (msg)
 	{
 	case WM_CLOSE:
@@ -183,6 +195,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_KEYDOWN:
 		// syskey commands need to be handled to track ALT key (VK_MENU) and F10
 	case WM_SYSKEYDOWN:
+		// don't use this keyboard message if ImGui wants to capture
+		if (imGuiIO.WantCaptureKeyboard) break;
+
 		// the lParam indicates if the key was previously down in the 30th bit, so this mask checks that
 		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled()) // filters autoRepeat events
 		{
@@ -191,15 +206,24 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
+		// don't use this keyboard message if ImGui wants to capture
+		if (imGuiIO.WantCaptureKeyboard) break;
+
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_CHAR:
+		// don't use this keyboard message if ImGui wants to capture
+		if (imGuiIO.WantCaptureKeyboard) break;
+
 		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
 		/********** END KEYBOARD MESSAGES **********/
 		/********** MOUSE MESSAGES **********/
 	case WM_MOUSEMOVE:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			// in client region -> log move, and log enter + capture mouse (if not previously in widow)
 			if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
@@ -229,6 +253,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	case WM_LBUTTONDOWN:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnLeftPressed(pt.x, pt.y);
 			// bring window to foreground on left click of the client region
@@ -237,18 +264,27 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	case WM_RBUTTONDOWN:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnRightPressed(pt.x, pt.y);
 			break;
 		}
 	case WM_MBUTTONDOWN:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnWheelPressed(pt.x, pt.y);
 			break;
 		}
 	case WM_LBUTTONUP:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnLeftReleased(pt.x, pt.y);
 			ReleaseMouse(pt);
@@ -256,6 +292,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	case WM_RBUTTONUP:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnRightReleased(pt.x, pt.y);
 			ReleaseMouse(pt);
@@ -263,6 +302,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	case WM_MBUTTONUP:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.OnWheelReleased(pt.x, pt.y);
 			ReleaseMouse(pt);
@@ -270,6 +312,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	case WM_MOUSEWHEEL:
 		{
+			// don't use this mouse message if ImGui wants to capture
+			if (imGuiIO.WantCaptureMouse) break;
+
 			const POINTS pt = MAKEPOINTS(lParam);
 			const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
 			mouse.OnWheelDelta(pt.x, pt.y, delta);

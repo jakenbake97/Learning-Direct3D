@@ -2,6 +2,7 @@
 #include "BindableBase.h"
 #include "GraphicsErrorMacros.h"
 #include "Cube.h"
+#include "Sampler.h"
 #include "Surface.h"
 #include "Texture.h"
 
@@ -43,6 +44,8 @@ SkinnedBox::SkinnedBox(Graphics& gfx, std::mt19937& rng, std::uniform_real_distr
 		auto pvsbc = pvs->GetBytecode();
 		AddStaticBind(std::move(pvs));
 
+		AddStaticBind(std::make_unique<Sampler>(gfx));
+
 		AddStaticBind(std::make_unique<PixelShader>(gfx, L"TexturePS.cso"));
 
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
@@ -79,6 +82,5 @@ DirectX::XMMATRIX SkinnedBox::GetTransformXM() const noexcept
 	namespace dx = DirectX;
 	return dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
 		dx::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		dx::XMMatrixRotationRollPitchYaw(theta, phi, chi) *
-		dx::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+		dx::XMMatrixRotationRollPitchYaw(theta, phi, chi);
 }

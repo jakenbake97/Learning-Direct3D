@@ -11,12 +11,15 @@
 #include "HWMath.h"
 #include "Surface.h"
 #include "GDIPlusManager.h"
+#include "imgui/imgui.h"
+
+namespace dx = DirectX;
 
 GDIPlusManager gdiPM;
 
 App::App()
 	:
-	App(800, 600, "Half-Way D3D Engine")
+	App(1200, 800, "Half-Way D3D Engine")
 {
 }
 
@@ -98,12 +101,31 @@ int App::Start()
 
 void App::FrameUpdate()
 {
-	const auto dt = timer.Mark();
-	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f);
+	const auto dt = timer.Mark() * speedFactor;
+
+	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
+	
+	wnd.Gfx().SetCamera(cam.GetMatrix());
+
 	for (auto& b : drawables)
 	{
 		b->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
 		b->Draw(wnd.Gfx());
 	}
+
+	// imgui window to control simulation speed
+	if (ImGui::Begin("Simulation Speed"))
+	{
+		ImGui::SliderFloat("Speed Factor", &speedFactor, 0.0f, 4.0f);
+		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+		            ImGui::GetIO().Framerate);
+		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING (hold space to pause)");
+	}
+	ImGui::End();
+
+	// imgui window control camera
+	cam.SpawnControlWindow();
+	
+	// present
 	wnd.Gfx().EndFrame();
 }

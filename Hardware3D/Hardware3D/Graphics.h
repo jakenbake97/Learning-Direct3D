@@ -52,21 +52,28 @@ public:
 		std::string reason;
 	};
 public:
-	Graphics(HWND hWnd, UINT width = 800, UINT height = 600);
+	Graphics(HWND hWnd, UINT width = 1200, UINT height = 800);
 	Graphics(const Graphics&) = delete;
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&&) = delete;
-	~Graphics() = default;
+	~Graphics();
 
 	void EndFrame();
-	void ClearBuffer(float red, float green, float blue) noexcept;
+	void BeginFrame(float red, float green, float blue) noexcept;
 	void DrawIndexed(UINT count) noexcept(!IS_DEBUG);
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;
 	DirectX::XMMATRIX GetProjection() const noexcept;
-	void DrawTestTriangle(float angle, float x, float y, float z = 0);
+	void SetCamera(DirectX::FXMMATRIX cam) noexcept;
+	DirectX::XMMATRIX GetCamera() const noexcept;
+	void EnableImGui() noexcept;
+	void DisableImGui() noexcept;
+	bool IsImGuiEnabled() const noexcept;
+	void ToggleImGui() noexcept;
 private:
+	bool imGuiEnabled = true;
 	DirectX::XMMATRIX projection;
+	DirectX::XMMATRIX camera;
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
