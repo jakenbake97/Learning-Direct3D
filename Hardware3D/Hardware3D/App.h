@@ -4,6 +4,7 @@
 #include "Timer.h"
 #include "ImguiManager.h"
 #include "Camera.h"
+#include "PointLight.h"
 
 class App
 {
@@ -23,5 +24,6 @@ private:
 	std::vector<std::unique_ptr<Drawable>> drawables;
 	float speedFactor = 1.0f;
 	Camera cam;
+	PointLight light;
 	static constexpr size_t numDrawables = 180;
 };

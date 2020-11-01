@@ -349,3 +349,5 @@ healthchecksdb
 MigrationBackup/
 
 Hardware3D/Hardware3D/imgui.ini
+
+*.diagsession

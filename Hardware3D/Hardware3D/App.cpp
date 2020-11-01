@@ -1,5 +1,4 @@
 ﻿#include "App.h"
-#include "Melon.h"
 #include "Pyramid.h"
 #include "Box.h"
 #include "Sheet.h"
@@ -25,7 +24,8 @@ App::App()
 
 App::App(int width, int height, const char* windowName)
 	:
-	wnd(width, height, windowName)
+	wnd(width, height, windowName),
+light(wnd.Gfx())
 {
 	class Factory
 	{
@@ -37,32 +37,11 @@ App::App(int width, int height, const char* windowName)
 		}
 
 		std::unique_ptr<Drawable> operator()()
-		{
-			switch (typeDist(rng))
-			{
-			case 0:
-				return std::make_unique<Pyramid>(
-					gfx, rng, aDist, dDist,
-					oDist, rDist
-				);
-			case 1:
-				return std::make_unique<Box>(
-					gfx, rng, aDist, dDist,
-					oDist, rDist, bDist
-				);
-			case 2:
-				return std::make_unique<Melon>(
-					gfx, rng, aDist, dDist,
-					oDist, rDist, longDist, latDist
-				);
-			case 3:
-				return std::make_unique<Sheet>(gfx, rng, aDist, dDist, oDist, rDist);
-			case 4:
-				return std::make_unique<SkinnedBox>(gfx, rng, aDist, dDist, oDist, rDist);
-			default:
-				assert(false && "bad drawable type in factory");
-				return {};
-			}
+		{			
+			return std::make_unique<Box>(
+				gfx, rng, aDist, dDist,
+				oDist, rDist, bDist
+			);
 		}
 
 	private:
@@ -73,9 +52,6 @@ App::App(int width, int height, const char* windowName)
 		std::uniform_real_distribution<float> oDist{0.0f, PI * 0.08f};
 		std::uniform_real_distribution<float> rDist{6.0f, 20.0f};
 		std::uniform_real_distribution<float> bDist{0.4f, 3.0f};
-		std::uniform_int_distribution<int> latDist{5, 20};
-		std::uniform_int_distribution<int> longDist{10, 40};
-		std::uniform_int_distribution<int> typeDist{0, 4};
 	};
 
 	drawables.reserve(numDrawables);
@@ -106,13 +82,14 @@ void App::FrameUpdate()
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	
 	wnd.Gfx().SetCamera(cam.GetMatrix());
+	light.Bind(wnd.Gfx());
 
 	for (auto& b : drawables)
 	{
 		b->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
 		b->Draw(wnd.Gfx());
 	}
-
+	light.Draw(wnd.Gfx());
 	// imgui window to control simulation speed
 	if (ImGui::Begin("Simulation Speed"))
 	{
@@ -123,8 +100,9 @@ void App::FrameUpdate()
 	}
 	ImGui::End();
 
-	// imgui window control camera
+	// imgui windows control camera and light
 	cam.SpawnControlWindow();
+	light.SpawnControlWindow();
 	
 	// present
 	wnd.Gfx().EndFrame();
