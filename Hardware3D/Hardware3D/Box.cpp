@@ -10,18 +10,10 @@ Box::Box(Graphics& gfx,
 	std::uniform_real_distribution<float>& dDist, 
 	std::uniform_real_distribution<float>& oDist, 
 	std::uniform_real_distribution<float>& rDist,
-	std::uniform_real_distribution<float>& bDist)
+	std::uniform_real_distribution<float>& bDist,
+	DirectX::XMFLOAT3 material)
 		:
-r(rDist(rng)),
-theta(aDist(rng)),
-phi(aDist(rng)),
-chi(aDist(rng)),
-dRoll(dDist(rng)),
-dPitch(dDist(rng)),
-dYaw(dDist(rng)),
-dTheta(oDist(rng)),
-dPhi(oDist(rng)),
-dChi(oDist(rng))
+TestObject(gfx, rng, aDist, dDist, oDist, rDist)
 {
 	namespace dx = DirectX;
 	if (!IsStaticInitialized())
@@ -64,25 +56,22 @@ dChi(oDist(rng))
 	// transforms are unique to each box, so they aren't in the static buffers
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
 
+	struct PSMaterialConstant
+	{
+		dx::XMFLOAT3 color;
+		float specularIntensity = 0.6f;
+		float specularPower = 30.0f;
+		float padding[3];
+	} colorConst;
+	colorConst.color = material;
+	AddBind(std::make_unique<PixelConstantBuffer<PSMaterialConstant>>(gfx, colorConst, 1u));
+
 	// model deformation transform (per instance, not stored as bind)
 	dx::XMStoreFloat3x3(&mt, dx::XMMatrixScaling(1.0f, 1.0f, bDist(rng)));
-}
-
-void Box::Update(float dt) noexcept
-{
-	roll += dRoll * dt;
-	pitch += dPitch * dt;
-	yaw += dYaw * dt;
-	theta += dTheta * dt;
-	phi += dPhi * dt;
-	chi += dChi * dt;
 }
 
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
 	namespace dx = DirectX;
-	return dx::XMLoadFloat3x3(&mt) *
-		dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
-		dx::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		dx::XMMatrixRotationRollPitchYaw(theta, phi, chi);
+	return dx::XMLoadFloat3x3(&mt) * TestObject::GetTransformXM();
 }
