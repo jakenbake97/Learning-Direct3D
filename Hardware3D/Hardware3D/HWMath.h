@@ -14,7 +14,7 @@ template<typename T>
 T WrapAngle(T theta)
 {
 	const T modded = fmod(theta, (T)2.0 * (T)PI_D);
-	return modded > (T)PI_D ? modded - (T)2.0 * (T)PI_D : modded;
+	return (modded > (T)PI_D) ? (modded - (T)2.0 * (T)PI_D) : modded;
 }
 
 template<typename T>

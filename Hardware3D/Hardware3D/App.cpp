@@ -25,7 +25,7 @@ App::App()
 App::App(int width, int height, const char* windowName)
 	:
 	wnd(width, height, windowName),
-light(wnd.Gfx())
+	light(wnd.Gfx())
 {
 	class Factory
 	{
@@ -37,14 +37,18 @@ light(wnd.Gfx())
 		}
 
 		std::unique_ptr<Drawable> operator()()
-		{			
-			const DirectX::XMFLOAT3 mat = { cDist(rng), cDist(rng), cDist(rng) };
-			switch(sDist(rng))
+		{
+			const DirectX::XMFLOAT3 mat = {cDist(rng), cDist(rng), cDist(rng)};
+			switch (sDist(rng))
 			{
 			case 0:
 				return std::make_unique<Box>(gfx, rng, aDist, dDist, oDist, rDist, bDist, mat);
 			case 1:
 				return std::make_unique<Cylinder>(gfx, rng, aDist, dDist, oDist, rDist, bDist, tDist);
+			case 2:
+				return std::make_unique<Pyramid>(gfx, rng, aDist, dDist, oDist, rDist, tDist);
+			case 3:
+				return std::make_unique<SkinnedBox>(gfx, rng, aDist, dDist, oDist, rDist);
 			default:
 				assert(false && "impossible drawable option in factory");
 				return {};
@@ -54,18 +58,27 @@ light(wnd.Gfx())
 	private:
 		Graphics& gfx;
 		std::mt19937 rng{std::random_device{}()};
-		std::uniform_int_distribution<int> sDist{ 0,1 };
+		std::uniform_int_distribution<int> sDist{0, 3};
 		std::uniform_real_distribution<float> aDist{0.0f, PI * 2.0f};
 		std::uniform_real_distribution<float> dDist{0.0f, PI * 0.5f};
 		std::uniform_real_distribution<float> oDist{0.0f, PI * 0.08f};
 		std::uniform_real_distribution<float> rDist{6.0f, 20.0f};
 		std::uniform_real_distribution<float> bDist{0.4f, 3.0f};
 		std::uniform_real_distribution<float> cDist{0.0f, 1.0f};
-		std::uniform_int_distribution<int> tDist{ 3,30 };
+		std::uniform_int_distribution<int> tDist{3, 30};
 	};
 
 	drawables.reserve(numDrawables);
 	std::generate_n(std::back_inserter(drawables), numDrawables, Factory(wnd.Gfx()));
+
+	// inti box pointers for editing instance parameters
+	for (auto& pd : drawables)
+	{
+		if (auto pb = dynamic_cast<Box*>(pd.get()))
+		{
+			boxes.push_back(pb);
+		}
+	}
 
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
@@ -90,17 +103,30 @@ void App::FrameUpdate()
 	const auto dt = timer.Mark() * speedFactor;
 
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
-	
+
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	for (auto& b : drawables)
+	for (auto& mesh : drawables)
 	{
-		b->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
-		b->Draw(wnd.Gfx());
+		mesh->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
+		mesh->Draw(wnd.Gfx());
 	}
 	light.Draw(wnd.Gfx());
-	// imgui window to control simulation speed
+
+	// imgui windows
+	SpawnSimulationWindow();
+	cam.SpawnControlWindow();
+	light.SpawnControlWindow();
+	SpawnBoxWindowManagerWindow();
+	SpawnBoxWindows();
+
+	// present
+	wnd.Gfx().EndFrame();
+}
+
+void App::SpawnSimulationWindow() noexcept
+{
 	if (ImGui::Begin("Simulation Speed"))
 	{
 		ImGui::SliderFloat("Speed Factor", &speedFactor, 0.0f, 6.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
@@ -109,11 +135,52 @@ void App::FrameUpdate()
 		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING (hold space to pause)");
 	}
 	ImGui::End();
+}
 
-	// imgui windows control camera and light
-	cam.SpawnControlWindow();
-	light.SpawnControlWindow();
-	
-	// present
-	wnd.Gfx().EndFrame();
+void App::SpawnBoxWindowManagerWindow() noexcept
+{
+	// imgui window to open box windows
+	if (ImGui::Begin("Boxes"))
+	{
+		using namespace std::string_literals;
+		const auto preview = comboBoxIndex ? std::to_string(*comboBoxIndex) : "Choose a box..."s;
+		if (ImGui::BeginCombo("Box Number", preview.c_str()))
+		{
+			for (int i = 0; i < boxes.size(); ++i)
+			{
+				const bool selected = *comboBoxIndex == i;
+				if (ImGui::Selectable(std::to_string(i).c_str(), selected))
+				{
+					comboBoxIndex = i;
+				}
+				if (selected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button("Spawn Control Window") && comboBoxIndex)
+		{
+			boxControlIDs.insert(*comboBoxIndex);
+			comboBoxIndex.reset();
+		}
+	}
+	ImGui::End();
+}
+
+void App::SpawnBoxWindows() noexcept
+{
+	// imgui box attribute control window
+	for (auto i = boxControlIDs.begin(); i != boxControlIDs.end();)
+	{
+		if (!boxes[*i]->SpawnControlWindow(*i, wnd.Gfx()))
+		{
+			i = boxControlIDs.erase(i);
+		}
+		else
+		{
+			++i;
+		}
+	}
 }
