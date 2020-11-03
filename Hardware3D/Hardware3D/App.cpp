@@ -3,7 +3,7 @@
 #include "Box.h"
 #include "Cylinder.h"
 #include "SkinnedBox.h"
-#include <cmath>
+#include "AssetImportTest.h"
 #include <memory>
 #include <algorithm>
 #include <iterator>
@@ -30,8 +30,6 @@ App::App(int width, int height, const char* windowName)
 	wnd(width, height, windowName),
 	light(wnd.Gfx())
 {
-	Assimp::Importer imp;
-	auto model = imp.ReadFile("models\\suzanne.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
 	
 	class Factory
 	{
@@ -55,6 +53,8 @@ App::App(int width, int height, const char* windowName)
 				return std::make_unique<Pyramid>(gfx, rng, aDist, dDist, oDist, rDist, tDist);
 			case 3:
 				return std::make_unique<SkinnedBox>(gfx, rng, aDist, dDist, oDist, rDist);
+			case 4:
+				return std::make_unique<AssetImportTest>(gfx, rng, aDist, dDist, oDist, rDist, mat, 1.5f);
 			default:
 				assert(false && "impossible drawable option in factory");
 				return {};
@@ -64,7 +64,7 @@ App::App(int width, int height, const char* windowName)
 	private:
 		Graphics& gfx;
 		std::mt19937 rng{std::random_device{}()};
-		std::uniform_int_distribution<int> sDist{0, 3};
+		std::uniform_int_distribution<int> sDist{0, 4};
 		std::uniform_real_distribution<float> aDist{0.0f, PI * 2.0f};
 		std::uniform_real_distribution<float> dDist{0.0f, PI * 0.5f};
 		std::uniform_real_distribution<float> oDist{0.0f, PI * 0.08f};
