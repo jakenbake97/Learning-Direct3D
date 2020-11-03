@@ -11,9 +11,6 @@
 #include "Surface.h"
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 namespace dx = DirectX;
 
