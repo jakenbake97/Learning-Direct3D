@@ -14,10 +14,11 @@ void PointLight::SpawnControlWindow() noexcept
 	if(ImGui::Begin("Light"))
 	{
 		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &cbData.pos.x, -60.0f, 60.0f, "%.1f");
-		ImGui::SliderFloat("Y", &cbData.pos.y, -60.0f, 60.0f, "%.1f");
-		ImGui::SliderFloat("Z", &cbData.pos.z, -60.0f, 60.0f, "%.1f");
+		float tempPos[3] = {cbData.pos.x, cbData.pos.y, cbData.pos.z};
+		ImGui::DragFloat3("Position", tempPos, 1.0f, -60.0f, 60.0f, "%.1f");
 
+		cbData.pos = { tempPos[0], tempPos[1], tempPos[2] };
+		
 		ImGui::Text("Appearance");
 		ImGui::SliderFloat("Intensity", &cbData.diffuseIntensity, 0.01f, 2.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
 		ImGui::ColorEdit3("Diffuse Color", &cbData.diffuseColor.x);
@@ -49,7 +50,7 @@ void PointLight::Reset() noexcept
 	};
 }
 
-void PointLight::Draw(Graphics& gfx) const noexcept(!true)
+void PointLight::Draw(Graphics& gfx) const noxnd
 {
 	mesh.SetPos(cbData.pos);
 	mesh.Draw(gfx);

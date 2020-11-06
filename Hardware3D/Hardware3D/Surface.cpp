@@ -44,7 +44,7 @@ void Surface::Clear(Color fillValue) noexcept
 	memset(pBuffer.get(), fillValue.dword, width * height * sizeof(Color));
 }
 
-void Surface::PutPixel(unsigned x, unsigned y, Color c) noexcept(!true)
+void Surface::PutPixel(unsigned x, unsigned y, Color c) noxnd
 {
 	assert(x >= 0);
 	assert(y >= 0);
@@ -53,7 +53,7 @@ void Surface::PutPixel(unsigned x, unsigned y, Color c) noexcept(!true)
 	pBuffer[y * width + x] = c;
 }
 
-Surface::Color Surface::GetPixel(unsigned x, unsigned y) const noexcept(!true)
+Surface::Color Surface::GetPixel(unsigned x, unsigned y) const noxnd
 {
 	assert(x >= 0);
 	assert(y >= 0);
@@ -183,7 +183,7 @@ void Surface::Save(const std::string& filename) const
 	}
 }
 
-void Surface::Copy(const Surface& src) noexcept(!IS_DEBUG)
+void Surface::Copy(const Surface& src) noxnd
 {
 	assert(width == src.width);
 	assert(height == src.height);

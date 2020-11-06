@@ -1,10 +1,12 @@
 ﻿#include "AssetImportTest.h"
-#include "BindableBase.h"
+#include "BindableCommon.h"
 #include "GraphicsErrorMacros.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Vertex.h"
+
+using namespace Bind;
 
 AssetImportTest::AssetImportTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distribution<float>& aDist,
 	std::uniform_real_distribution<float>& dDist, std::uniform_real_distribution<float>& oDist,
@@ -16,8 +18,8 @@ TestObject(gfx, rng, aDist,dDist,oDist,rDist)
 
 	if (!IsStaticInitialized())
 	{
-		using hw3dexp::VertexLayout;
-		hw3dexp::VertexBuffer vbuf(std::move(
+		using Dvtx::VertexLayout;
+		Dvtx::VertexBuffer vbuf(std::move(
 			VertexLayout{}
 			.Append(VertexLayout::Position3D)
 			.Append(VertexLayout::Normal)

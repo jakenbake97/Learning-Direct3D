@@ -181,7 +181,7 @@ void Graphics::ToggleImGui() noexcept
 	imGuiEnabled = !imGuiEnabled;
 }
 
-void Graphics::DrawIndexed(UINT count) noexcept(!IS_DEBUG)
+void Graphics::DrawIndexed(UINT count) noxnd
 {
 	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(count, 0u, 0u));
 }

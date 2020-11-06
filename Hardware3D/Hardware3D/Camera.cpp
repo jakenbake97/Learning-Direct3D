@@ -5,12 +5,9 @@ namespace dx = DirectX;
 
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
-	const auto pos = dx::XMVector3Transform(
-		dx::XMVectorSet(0.0f, 0.0f, -r, 0.0f),
-		dx::XMMatrixRotationRollPitchYaw(phi, -theta, 0.0f)
-	);
+	const auto pos = dx::XMVectorSet(coord[0], coord[1], coord[2], 1.0f);
 
-	return dx::XMMatrixLookAtLH(pos, dx::XMVectorZero(),
+	return dx::XMMatrixLookAtLH(pos, dx::XMVectorAdd(pos, dx::XMVectorSet(0.0f, 0.0f, 1.0f,1.0f)),
 		dx::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)) *
 		dx::XMMatrixRotationRollPitchYaw(pitch, -yaw, roll
 		);
@@ -21,9 +18,7 @@ void Camera::SpawnControlWindow() noexcept
 	if (ImGui::Begin("Camera"))
 	{
 		ImGui::Text("Position");
-		ImGui::SliderFloat("Radius", &r, 0.1f, 80.0f, "%.1f");
-		ImGui::SliderAngle("Theta", &theta, -180.0f, 180.0f);
-		ImGui::SliderAngle("Phi", &phi, -89.0f, 89.0f);
+		ImGui::DragFloat3("Position", coord);
 
 		ImGui::Text("Orientation");
 		ImGui::SliderAngle("Roll", &roll, -180.0f, 180.0f);
