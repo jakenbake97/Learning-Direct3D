@@ -207,7 +207,7 @@ namespace Dvtx
 		{
 			assert(sizeof...(params) == layout.GetElementCount() && "Param count doesn't match number of vertex elements");
 			buffer.resize(buffer.size() + layout.Size());
-			Back().SetAttributeByIndex(0u, std::forward<Params>(params)...);
+			Back().Vertex::SetAttributeByIndex(0u, std::forward<Params>(params)...);
 		}
 		Vertex Back() noxnd;
 		Vertex Front() noxnd;

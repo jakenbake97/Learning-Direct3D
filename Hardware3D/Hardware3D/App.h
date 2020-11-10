@@ -19,7 +19,7 @@ public:
 	~App() = default;
 private:
 	void FrameUpdate();
-	void ShowModelWindow();
+	static void ShowImguiDemoWindow(bool showDemoWindow);
 private:
 	ImguiManager imgui;
 	Window wnd;
@@ -27,13 +27,5 @@ private:
 	float speedFactor = 1.0f;
 	Camera cam;
 	PointLight light;
-	Model nanoSuit{wnd.Gfx(), "Models\\nanosuit.obj"};
-
-	struct 
-	{
-		float roll = 0.0f;
-		float pitch = 0.0f;
-		float yaw = 0.0f;
-		float coord[3] = {0.0f, 0.0f, 0.0f};
-	} pos;
+	Model nanoSuit{wnd.Gfx(), "Models\\nano.gltf"};
 };
