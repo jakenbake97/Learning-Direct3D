@@ -20,7 +20,9 @@ public:
 private:
 	void FrameUpdate();
 	static void ShowImguiDemoWindow(bool showDemoWindow);
+	void ShowRawInputWindow();
 private:
+	int x = 0, y = 0;
 	ImguiManager imgui;
 	Window wnd;
 	Timer timer;

@@ -58,6 +58,25 @@ void App::FrameUpdate()
 	ShowImguiDemoWindow(false);
 	nanoSuit.ShowWindow();
 
+	while(const auto e = wnd.kbd.ReadKey())
+	{
+		if (e->IsPress() && e->GetCode() == VK_INSERT )
+		{
+			if (wnd.CursorEnabled())
+			{
+				wnd.DisableCursor();
+				wnd.mouse.EnableRaw();
+			}
+			else
+			{
+				wnd.EnableCursor();
+				wnd.mouse.DisableRaw();
+			}
+		}
+	}
+	
+	ShowRawInputWindow();
+
 	// present
 	wnd.Gfx().EndFrame();
 }
@@ -66,4 +85,19 @@ void App::ShowImguiDemoWindow(bool showDemoWindow)
 {
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
+}
+
+void App::ShowRawInputWindow()
+{
+	while (const auto d = wnd.mouse.ReadRawDelta())
+	{
+		x += d->x;
+		y += d->y;
+	}
+	if (ImGui::Begin("Raw Input"))
+	{
+		ImGui::Text("Tally: (%d,%d)", x, y);
+		ImGui::Text("Cursor: %s", wnd.CursorEnabled() ? "Enabled" : "Disabled");
+	}
+	ImGui::End();
 }

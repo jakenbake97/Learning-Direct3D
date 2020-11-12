@@ -352,3 +352,5 @@ MigrationBackup/
 Hardware3D/Hardware3D/imgui.ini
 
 *.diagsession
+
+*.cso
