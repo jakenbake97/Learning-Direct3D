@@ -24,7 +24,7 @@ std::optional<char> Keyboard::ReadChar() noexcept
 {
 	if (charBuffer.empty()) return {};
 
-	unsigned char charCode = charBuffer.front();
+	const unsigned char charCode = charBuffer.front();
 	charBuffer.pop();
 	return charCode;
 }
@@ -68,7 +68,7 @@ bool Keyboard::AutorepeatIsEnabled() const noexcept
 void Keyboard::OnKeyPressed(unsigned char keycode) noexcept
 {
 	keyStates[keycode] = true;
-	keyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Release, keycode));
+	keyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Press, keycode));
 	TrimBuffer(keyBuffer);
 }
 
